@@ -1,11 +1,4 @@
-/**
- * @file src/views/DashboardLayout.jsx
- * @description Standard dashboard shell with top navigation bar and
- * a main content area rendered via a React Router <Outlet>.
- *
- * The navbar displays the user's GitHub avatar & display name, plus a
- * logout button. The main content area is where child routes render.
- */
+// Dashboard shell — top nav bar + content outlet.
 
 import { Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -16,10 +9,9 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      {/* ── Top navigation bar ────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-border bg-surface-elevated/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-          {/* Left — brand */}
+          {/* Brand */}
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand/10">
               <Rocket className="w-5 h-5 text-brand" />
@@ -79,7 +71,6 @@ export default function DashboardLayout() {
         </div>
       </header>
 
-      {/* ── Main content area ─────────────────────────────────────────────── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </main>

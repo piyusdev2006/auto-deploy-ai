@@ -1,34 +1,10 @@
-/**
- * @file services/ai.service.js
- * @description AI orchestration layer — LangChain agents for DevOps automation.
- *
- * Exposes two public functions consumed by the Express routes:
- *  • generateInfrastructure(repoContext) → { dockerfile, dockerCompose }
- *  • generateCI(repoContext)            → deploy.yml string
- *
- * LLM provider is hot-swappable via the LLM_PROVIDER env var:
- *  • "gemini" (default) — Google Gemini 1.5 Flash
- *  • "groq"             — Groq (Llama 3.3 70B Versatile)
- *
- * All LLM calls use LangChain's structured output (Zod schemas) so we get
- * deterministic, validated JSON — no fragile regex parsing.
- */
+// AI service — LangChain agents for generating Dockerfiles, compose files, and CI pipelines.
+// Supports Gemini (default) and Groq providers via LLM_PROVIDER env var.
 
 const { ChatPromptTemplate } = require("@langchain/core/prompts");
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const { ChatGroq } = require("@langchain/groq");
 const { z } = require("zod");
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 1. LLM Factory — instantiate the right model based on env config
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Create and return the configured LLM instance.
- * Reads LLM_PROVIDER, GOOGLE_API_KEY / GROQ_API_KEY from process.env.
- *
- * @returns {import("@langchain/core/language_models/chat_models").BaseChatModel}
- */
 const createLLM = () => {
   const provider = (process.env.LLM_PROVIDER || "gemini").toLowerCase();
 
@@ -47,15 +23,6 @@ const createLLM = () => {
     temperature: 0,
   });
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 2. Zod Schemas — strict output contracts for LangChain structured output
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Schema for the Architect Agent's response.
- * Enforces exactly two string keys: dockerfile, dockerCompose.
- */
 const infrastructureSchema = z.object({
   dockerfile: z
     .string()
@@ -67,10 +34,6 @@ const infrastructureSchema = z.object({
     ),
 });
 
-/**
- * Schema for the Pipeline Agent's response.
- * Enforces a single string key: workflowYaml.
- */
 const ciPipelineSchema = z.object({
   workflowYaml: z
     .string()
@@ -78,10 +41,6 @@ const ciPipelineSchema = z.object({
       "Complete GitHub Actions .github/workflows/deploy.yml content that builds and pushes the Docker image to the VPS.",
     ),
 });
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 3. Prompt Templates
-// ─────────────────────────────────────────────────────────────────────────────
 
 const ARCHITECT_SYSTEM_PROMPT = `You are a Senior DevOps Engineer specialising in containerisation and cloud deployments.
 
@@ -130,70 +89,33 @@ const pipelinePrompt = ChatPromptTemplate.fromMessages([
   ["human", "Repository Context:\n{repoContext}"],
 ]);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 4. Public API
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * The Architect Agent — generates Dockerfile + docker-compose.yml.
- *
- * @param {string} repoContext  Description of the repo's tech stack, file
- *                              structure, and entry points.
- * @returns {Promise<{ dockerfile: string, dockerCompose: string }>}
- * @throws {Error} If the LLM returns unparseable / non-conforming output.
- */
 const generateInfrastructure = async (repoContext) => {
   if (!repoContext || typeof repoContext !== "string") {
     throw new Error("repoContext must be a non-empty string.");
   }
 
   const llm = createLLM();
-
-  // Bind the Zod schema so LangChain enforces structured output.
   const structuredLlm = llm.withStructuredOutput(infrastructureSchema);
-
-  // Two-step: format the prompt, then invoke the structured LLM directly.
-  // This is functionally identical to prompt.pipe(structuredLlm).invoke()
-  // but allows clean unit testing with simple { invoke } mocks.
   const messages = await architectPrompt.formatMessages({ repoContext });
   const result = await structuredLlm.invoke(messages);
-
-  return result; // already validated by Zod
+  return result;
 };
 
-/**
- * The Pipeline Agent — generates a GitHub Actions deploy.yml.
- *
- * @param {string} repoContext  Description of the repo's tech stack and branch
- *                              strategy.
- * @returns {Promise<string>}   The deploy.yml content as a plain string.
- * @throws {Error} If the LLM returns unparseable output.
- */
 const generateCI = async (repoContext) => {
   if (!repoContext || typeof repoContext !== "string") {
     throw new Error("repoContext must be a non-empty string.");
   }
 
   const llm = createLLM();
-
   const structuredLlm = llm.withStructuredOutput(ciPipelineSchema);
-
   const messages = await pipelinePrompt.formatMessages({ repoContext });
   const result = await structuredLlm.invoke(messages);
-
-  return result.workflowYaml; // unwrap — callers just need the YAML string
+  return result.workflowYaml;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 5. Exports
-// ─────────────────────────────────────────────────────────────────────────────
-
 module.exports = {
-  // Public API
   generateInfrastructure,
   generateCI,
-
-  // Exported for testing / advanced usage
   createLLM,
   infrastructureSchema,
   ciPipelineSchema,

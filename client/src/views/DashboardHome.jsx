@@ -1,12 +1,4 @@
-/**
- * @file src/views/DashboardHome.jsx
- * @description Main dashboard view — two-column layout:
- *  Left:  GitHub repository list with "Deploy with AI" buttons.
- *  Right: Active & past deployment status cards with live polling.
- *
- * Polling: fetches deployments every 5 seconds so the UI updates in
- * real-time when the GitHub Action webhook pushes status changes.
- */
+// Dashboard home — repo list + deployment status with polling.
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -15,26 +7,22 @@ import RepoCard from "../components/RepoCard";
 import DeploymentStatus from "../components/DeploymentStatus";
 import { Loader2, Search, Inbox, AlertCircle } from "lucide-react";
 
-// Polling interval for deployment status (ms).
 const POLL_INTERVAL = 5_000;
 
 export default function DashboardHome() {
   const { user } = useAuth();
 
-  // ── Repos state ───────────────────────────────────────────────────────
   const [repos, setRepos] = useState([]);
   const [reposLoading, setReposLoading] = useState(true);
   const [reposError, setReposError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // ── Deployments state ─────────────────────────────────────────────────
   const [deployments, setDeployments] = useState([]);
   const [deploymentsLoading, setDeploymentsLoading] = useState(true);
 
   // Track which repos are currently being deployed.
   const [deployingRepos, setDeployingRepos] = useState(new Set());
 
-  // ── Fetch repos on mount ──────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
 
@@ -55,7 +43,6 @@ export default function DashboardHome() {
     };
   }, []);
 
-  // ── Poll deployments every 5 s ────────────────────────────────────────
   const fetchDeploymentsRef = useRef(null);
 
   const fetchDeploymentsFn = useCallback(async () => {
@@ -63,17 +50,14 @@ export default function DashboardHome() {
       const data = await getDeployments();
       setDeployments(data);
     } catch {
-      // Silent fail — polling will retry.
     } finally {
       setDeploymentsLoading(false);
     }
   }, []);
 
-  // Store latest ref so the interval always calls the fresh function.
   fetchDeploymentsRef.current = fetchDeploymentsFn;
 
   useEffect(() => {
-    // Initial fetch.
     fetchDeploymentsRef.current();
 
     const id = setInterval(() => {
@@ -83,13 +67,11 @@ export default function DashboardHome() {
     return () => clearInterval(id);
   }, []);
 
-  // ── Deploy handler ────────────────────────────────────────────────────
   const handleDeploy = useCallback(async (repo) => {
     setDeployingRepos((prev) => new Set(prev).add(repo.full_name));
 
     try {
       await triggerDeploy(repo.html_url, repo.name);
-      // Immediately refresh deployments to show the new entry.
       fetchDeploymentsRef.current();
     } catch (err) {
       console.error("Deploy failed:", err);
@@ -105,17 +87,14 @@ export default function DashboardHome() {
     }
   }, []);
 
-  // ── Filtered repos ────────────────────────────────────────────────────
   const filteredRepos = repos.filter(
     (r) =>
       r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (r.description || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // ── Render ────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
-      {/* ── Page title ─────────────────────────────────────────────────── */}
       <div>
         <h1 className="text-2xl font-bold text-text-primary">
           Welcome back, {user?.displayName || "Developer"}
@@ -125,9 +104,7 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      {/* ── Two-column layout ──────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* ── LEFT: Repositories (3/5 width) ──────────────────────────── */}
         <section className="lg:col-span-3 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-text-primary">
@@ -193,7 +170,6 @@ export default function DashboardHome() {
           )}
         </section>
 
-        {/* ── RIGHT: Deployments (2/5 width) ──────────────────────────── */}
         <section className="lg:col-span-2 space-y-4">
           <h2 className="text-lg font-semibold text-text-primary">
             Deployments

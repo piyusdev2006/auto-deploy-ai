@@ -25,7 +25,6 @@ const configurePassport = () => {
     done(null, user.id);
   });
 
-  // ── Deserialize: rehydrate the full User from the session id ──────────────
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await User.findById(id);
@@ -35,14 +34,13 @@ const configurePassport = () => {
     }
   });
 
-  // ── GitHub Strategy ───────────────────────────────────────────────────────
   passport.use(
     new GitHubStrategy(
       {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: process.env.GITHUB_CALLBACK_URL,
-        scope: ["user:email", "repo"], // repo scope needed to commit devops files
+        scope: ["user:email", "repo"],
       },
       async (accessToken, _refreshToken, profile, done) => {
         try {
@@ -52,20 +50,19 @@ const configurePassport = () => {
           );
 
           if (user) {
-            // Update the access token (GitHub may rotate it).
+            // Update token (GitHub may rotate it).
             user.githubAccessToken = accessToken;
-            user._tokenEncrypted = false; // mark as plaintext so pre-save re-encrypts
+            user._tokenEncrypted = false; // plaintext — pre-save re-encrypts
             user.displayName = profile.displayName || profile.username || "";
             user.avatarUrl = profile.photos?.[0]?.value || "";
             await user.save();
           } else {
-            // First-time login — create a new user.
             user = await User.create({
               githubId: profile.id,
               displayName: profile.displayName || profile.username || "",
               email: profile.emails?.[0]?.value || "",
               avatarUrl: profile.photos?.[0]?.value || "",
-              githubAccessToken: accessToken, // encrypted by pre-save hook
+              githubAccessToken: accessToken,
             });
           }
 

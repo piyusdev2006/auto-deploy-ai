@@ -1,16 +1,4 @@
-/**
- * @file src/context/AuthContext.jsx
- * @description React Context for managing authentication state.
- *
- * On mount, this provider calls GET /api/auth/me to check if the user
- * has a valid session cookie from the GitHub OAuth flow.
- *
- * Exposes:
- *  - user       — the authenticated user object (or null)
- *  - loading    — true while the initial session check is in flight
- *  - isAuthenticated — convenience boolean
- *  - logout()   — calls the backend logout endpoint and clears state
- */
+// Auth context — checks session on mount, exposes user / loading / logout.
 
 import {
   createContext,
@@ -23,15 +11,10 @@ import api from "../lib/api";
 
 const AuthContext = createContext(null);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Provider
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ── Check existing session on mount ───────────────────────────────────
   useEffect(() => {
     let cancelled = false;
 
@@ -40,7 +23,6 @@ export function AuthProvider({ children }) {
         const { data } = await api.get("/auth/me");
         if (!cancelled) setUser(data.user);
       } catch {
-        // 401 = no session → user stays null.
         if (!cancelled) setUser(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -54,13 +36,10 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // ── Logout handler ───────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
       await api.get("/auth/logout");
-    } catch {
-      // Even if the request fails, clear local state.
-    }
+    } catch {}
     setUser(null);
     window.location.href = "/login";
   }, []);
@@ -75,13 +54,6 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Hook
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * @returns {{ user: object|null, loading: boolean, isAuthenticated: boolean, logout: Function }}
- */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {

@@ -1,11 +1,4 @@
-/**
- * @file server.js
- * @description Entry point — loads env vars, connects to MongoDB, and starts
- * the Express HTTP server.
- *
- * This file is intentionally thin. All route / middleware registration lives
- * in app.js so that the Express app can be imported independently for testing.
- */
+// Entry point — loads env, connects MongoDB, starts Express.
 
 require("dotenv").config();
 

@@ -1,13 +1,4 @@
-/**
- * @file routes/auth.routes.js
- * @description Express router for GitHub OAuth authentication endpoints.
- *
- * Routes:
- *  GET /api/auth/github          → Redirect to GitHub login
- *  GET /api/auth/github/callback → Handle OAuth callback
- *  GET /api/auth/me              → Return current user (requires auth)
- *  GET /api/auth/logout          → Destroy session and log out
- */
+// Auth routes — GitHub OAuth login, callback, session check, logout.
 
 const express = require("express");
 const passport = require("passport");
@@ -15,20 +6,17 @@ const { ensureAuthenticated } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-// ── Initiate GitHub OAuth ───────────────────────────────────────────────────────
 router.get(
   "/github",
   passport.authenticate("github", { scope: ["user:email", "repo"] }),
 );
 
-// ── GitHub callback ─────────────────────────────────────────────────────────────
 router.get(
   "/github/callback",
   passport.authenticate("github", {
     failureRedirect: `${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=auth_failed`,
   }),
   (_req, res) => {
-    // Successful authentication — redirect to frontend dashboard.
     res.redirect(
       `${process.env.CLIENT_URL || "http://localhost:5173"}/dashboard`,
     );

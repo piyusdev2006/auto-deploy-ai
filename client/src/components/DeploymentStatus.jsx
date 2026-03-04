@@ -1,12 +1,4 @@
-/**
- * @file src/components/DeploymentStatus.jsx
- * @description Visual deployment tracker showing the current step in the
- * AI deployment pipeline with status-specific icons and colors.
- *
- * Props:
- *  - deployment — object from GET /api/deploy containing:
- *      status, logs, deployedUrl, projectId: { name, repoUrl, vpsIp }, createdAt
- */
+// Visual deployment tracker with pipeline status bar.
 
 import {
   Clock,
@@ -20,7 +12,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-// ── Status configuration ────────────────────────────────────────────────────
 const STATUS_CONFIG = {
   pending: {
     icon: Clock,
@@ -64,7 +55,6 @@ const STATUS_CONFIG = {
   },
 };
 
-// ── Pipeline steps (visual tracker) ─────────────────────────────────────────
 const PIPELINE_STEPS = ["pending", "generating", "deploying", "success"];
 
 function getStepState(currentStatus, step) {
@@ -91,13 +81,12 @@ export default function DeploymentStatus({ deployment }) {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
   const StatusIcon = config.icon;
 
-  const project = deployment.projectId; // populated by Mongoose
+  const project = deployment.projectId;
   const projectName = project?.name || "Unknown";
   const timeAgo = formatTimeAgo(deployment.createdAt);
 
   return (
     <div className="rounded-xl border border-border bg-surface-card overflow-hidden transition-all hover:border-border/80">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="p-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Status icon */}
@@ -136,7 +125,6 @@ export default function DeploymentStatus({ deployment }) {
         )}
       </div>
 
-      {/* ── Pipeline progress bar ─────────────────────────────────────────── */}
       <div className="px-4 pb-3">
         <div className="flex items-center gap-1">
           {PIPELINE_STEPS.map((step, idx) => {
@@ -157,7 +145,6 @@ export default function DeploymentStatus({ deployment }) {
         </div>
       </div>
 
-      {/* ── Logs toggle ──────────────────────────────────────────────────── */}
       {deployment.logs?.length > 0 && (
         <div className="border-t border-border">
           <button
@@ -188,7 +175,6 @@ export default function DeploymentStatus({ deployment }) {
   );
 }
 
-// ── Time formatting helper ──────────────────────────────────────────────────
 function formatTimeAgo(dateStr) {
   if (!dateStr) return "";
   const diff = Date.now() - new Date(dateStr).getTime();

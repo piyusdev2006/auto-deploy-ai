@@ -1,30 +1,20 @@
-/**
- * @file src/views/Login.jsx
- * @description Sleek, agency-style landing page with GitHub OAuth login.
- *
- * A single "Sign in with GitHub" button redirects the browser to the
- * backend OAuth endpoint. The full-page layout uses a centered card
- * with a gradient background.
- */
+// Landing page with GitHub OAuth login.
 
 import { Github, Rocket, Shield, Zap } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 
-// Backend OAuth entry point — browser redirect (not an API call).
 const GITHUB_AUTH_URL = "/api/auth/github";
 
 export default function Login() {
   const { isAuthenticated, loading } = useAuth();
 
-  // If already logged in, bounce to dashboard.
   if (!loading && isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-surface px-4">
-      {/* ── Hero card ──────────────────────────────────────────────────────── */}
       <div className="w-full max-w-md space-y-8 text-center">
         {/* Brand */}
         <div className="space-y-3">
@@ -75,7 +65,6 @@ export default function Login() {
         </p>
       </div>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="absolute bottom-6 text-xs text-text-muted">
         Built with LangChain &middot; Docker &middot; GitHub Actions
       </footer>

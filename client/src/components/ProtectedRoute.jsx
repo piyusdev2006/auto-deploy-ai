@@ -1,10 +1,4 @@
-/**
- * @file src/components/ProtectedRoute.jsx
- * @description Route guard — redirects unauthenticated users to /login.
- *
- * While the initial session check is loading, a full-screen spinner is
- * shown to prevent content flash.
- */
+// Route guard — redirects unauthenticated users to /login.
 
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";

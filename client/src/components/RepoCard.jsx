@@ -1,17 +1,7 @@
-/**
- * @file src/components/RepoCard.jsx
- * @description Stylized card displaying a GitHub repository with a
- * "Deploy with AI" action button.
- *
- * Props:
- *  - repo       — repository object { name, full_name, description, language, private, html_url }
- *  - onDeploy   — callback fired when the "Deploy" button is clicked
- *  - deploying  — boolean; true if a deployment is already in flight for this repo
- */
+// Repo card with "Deploy with AI" button.
 
 import { Rocket, Lock, Globe, ExternalLink } from "lucide-react";
 
-// ── Language color map ──────────────────────────────────────────────────────
 const LANG_COLORS = {
   JavaScript: "#f1e05a",
   TypeScript: "#3178c6",
@@ -35,7 +25,6 @@ const LANG_COLORS = {
 export default function RepoCard({ repo, onDeploy, deploying = false }) {
   return (
     <div className="group relative flex flex-col justify-between rounded-xl border border-border bg-surface-card p-5 transition-all hover:border-brand/40 hover:shadow-lg hover:shadow-brand/5">
-      {/* ── Header: name + visibility badge ──────────────────────────────── */}
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-base font-semibold text-text-primary truncate">
@@ -75,7 +64,6 @@ export default function RepoCard({ repo, onDeploy, deploying = false }) {
         )}
       </div>
 
-      {/* ── Actions ──────────────────────────────────────────────────────── */}
       <div className="mt-4 flex items-center gap-2">
         <button
           onClick={() => onDeploy(repo)}

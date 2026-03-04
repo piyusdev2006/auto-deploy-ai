@@ -1,12 +1,5 @@
-/**
- * @file middleware/auth.middleware.js
- * @description Express middleware helpers for authentication guards.
- */
+// Auth guard — returns 401 if no active session.
 
-/**
- * Ensures the request is from an authenticated (session-based) user.
- * Returns 401 if no active session exists.
- */
 const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();

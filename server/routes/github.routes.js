@@ -1,10 +1,4 @@
-/**
- * @file routes/github.routes.js
- * @description Express router for GitHub-related data endpoints.
- *
- * Routes:
- *  GET /api/github/repos — fetch the authenticated user's GitHub repos
- */
+// GitHub data routes — fetch user's repos.
 
 const express = require("express");
 const { ensureAuthenticated } = require("../middleware/auth.middleware");
@@ -13,15 +7,8 @@ const { getUserRepositories } = require("../services/github.service");
 
 const router = express.Router();
 
-/**
- * GET /api/github/repos
- *
- * Returns the user's GitHub repositories (public + private),
- * sorted by most recently pushed.
- */
 router.get("/repos", ensureAuthenticated, async (req, res) => {
   try {
-    // Reload user with the encrypted token selected.
     const user = await User.findById(req.user._id).select("+githubAccessToken");
     if (!user) {
       return res.status(404).json({ error: "User not found." });

@@ -1,20 +1,11 @@
-/**
- * @file config/db.js
- * @description MongoDB connection manager using Mongoose.
- *
- * Exports a single `connectDB` function that:
- *  1. Reads MONGO_URI from environment.
- *  2. Opens the connection with sensible defaults.
- *  3. Logs success or exits on failure (fail-fast in production).
- */
+// MongoDB connection — fail-fast in production, throws in dev/test.
 
+const dns = require("dns");
 const mongoose = require("mongoose");
 
-/**
- * Connect to MongoDB Atlas (or local instance).
- *
- * @returns {Promise<typeof mongoose>} resolved mongoose instance
- */
+// Force Google DNS so SRV lookups for MongoDB Atlas don't fail on restrictive networks.
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
