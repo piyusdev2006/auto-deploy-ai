@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────
+# Root .gitignore — AutoDeploy AI Monorepo
+# ─────────────────────────────────────────────────────────────
+
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+package-lock.json
+
+# ── Environment / Secrets ─────────────────────────────────────
+# Block every .env variant EXCEPT .env.example
+.env
+.env.*
+!.env.example
+
+# ── SSH / Cloud credentials ──────────────────────────────────
+*.pem
+*.key
+*.ppk
+*.pub
+*.crt
+*.csr
+
+# ── Build outputs ─────────────────────────────────────────────
+dist/
+build/
+out/
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── IDE / Editor ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Test / Coverage ──────────────────────────────────────────
+coverage/
+.nyc_output/
